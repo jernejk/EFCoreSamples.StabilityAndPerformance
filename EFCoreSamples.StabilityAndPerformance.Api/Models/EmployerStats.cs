@@ -1,5 +1,4 @@
-﻿using EFCoreSamples.StabilityAndPerformance.Api.Persistence;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace EFCoreSamples.StabilityAndPerformance.Api.Models
 {
@@ -9,7 +8,7 @@ namespace EFCoreSamples.StabilityAndPerformance.Api.Models
         public string LastName { get; set; }
         public int TotalSales { get; set; }
         public int TotalQuantity { get; set; }
-        public IEnumerable<SaleModel> Sales { get; set; }
+        public IEnumerable<SaleModel> Sales { get; set; } 
     }
 
     public class SaleModel
