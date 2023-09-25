@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence;
 
-#nullable disable
-
-namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence
+public partial class Product
 {
-    public partial class Product
+    public Product()
     {
-        public Product()
-        {
-            Sales = new HashSet<Sale>();
-        }
-
-        public int ProductId { get; set; }
-        public string Name { get; set; }
-        public decimal? Price { get; set; }
-
-        public virtual ICollection<Sale> Sales { get; set; }
+        Sales = new HashSet<Sale>();
     }
+
+    public int ProductId { get; set; }
+    public string Name { get; set; }
+    public decimal? Price { get; set; }
+
+    public virtual ICollection<Sale> Sales { get; set; }
 }

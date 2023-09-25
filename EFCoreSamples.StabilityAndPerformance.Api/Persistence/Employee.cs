@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence;
 
-#nullable disable
-
-namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence
+public partial class Employee
 {
-    public partial class Employee
+    public Employee()
     {
-        public Employee()
-        {
-            Sales = new HashSet<Sale>();
-        }
-
-        public int EmployeeId { get; set; }
-        public string FirstName { get; set; }
-        public string MiddleInitial { get; set; }
-        public string LastName { get; set; }
-
-        public virtual ICollection<Sale> Sales { get; set; }
+        Sales = new HashSet<Sale>();
     }
+
+    public int EmployeeId { get; set; }
+    public string FirstName { get; set; }
+    public string MiddleInitial { get; set; }
+    public string LastName { get; set; }
+
+    public virtual ICollection<Sale> Sales { get; set; }
 }
