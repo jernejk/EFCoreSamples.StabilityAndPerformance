@@ -15,3 +15,5 @@ We should never permaturerly optimize software however, that does mean we should
 DB Source: https://www.sqlskills.com/sql-server-resources/sql-server-demos/
 
 I used this DB because it's simple but has enough data to demonstrate why certain patterns are very dangerous and you should always use more optimum patterns. (which sometimes results in less code and better redability on top of better performance)
+
+**NOTE:** You'll need to change `SaleDB` SQL Server compatibility to be 2016 or later.
