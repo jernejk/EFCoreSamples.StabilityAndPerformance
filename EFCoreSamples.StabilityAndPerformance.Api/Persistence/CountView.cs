@@ -1,7 +1,6 @@
-﻿namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence
+﻿namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence;
+
+public class CountView
 {
-    public class CountView
-    {
-        public int Count {  get; set; }
-    }
+    public int Count {  get; set; }
 }
