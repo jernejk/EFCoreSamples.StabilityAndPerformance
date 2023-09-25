@@ -1,4 +1,5 @@
-﻿using EFCoreSamples.StabilityAndPerformance.Api.Persistence;
+﻿using EFCoreSamples.StabilityAndPerformance.Api.Models;
+using EFCoreSamples.StabilityAndPerformance.Api.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,4 +1,4 @@
-﻿namespace EFCoreSamples.StabilityAndPerformance.Api;
+﻿namespace EFCoreSamples.StabilityAndPerformance.Api.Models;
 
 public class TestResult
 {
