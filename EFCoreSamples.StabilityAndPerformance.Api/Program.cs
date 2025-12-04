@@ -15,6 +15,7 @@ builder.Services.AddDbContextPool<SalesDbContext>(options =>
 {
     // You can also use SQL Server.
     options.UseSqlServer(builder.Configuration.GetConnectionString("SalesDB"));
+    options.AddInterceptors(new ActualExecutionPlanInterceptor());
 
 #if DEBUG
     // Most project shouldn't expose sensitive data, which is why we are

@@ -3,6 +3,7 @@ using EFCoreSamples.StabilityAndPerformance.Api.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace EFCoreSamples.StabilityAndPerformance.Api.Controllers;
 
@@ -24,6 +25,8 @@ public class ExamplesCountController : ControllerBase
     public TestResult<int> WorstCase(bool isLoadFriendly = false)
     {
         IQueryable<Sale> query = GetBaseQuery(isLoadFriendly);
+        //query = query.Take(EF.Constant(1000000)).OrderBy(x => x.Quantity).ThenBy(x => x.CustomerId);
+        query = query.OrderBy(x => x.Quantity).ThenBy(x => x.CustomerId);
         return new TestResult<int>
         {
             Sql = query.ToQueryString(),
@@ -78,9 +81,14 @@ public class ExamplesCountController : ControllerBase
     /// Almost worst case scenario with no tracking.
     /// </summary>
     [HttpGet("bestCase")]
-    public TestResult<int> BestCase(bool isLoadFriendly = false)
+    public async Task<TestResult<int>> BestCase(bool isLoadFriendly = false)
     {
-        IQueryable<Sale> query = GetBaseQuery(isLoadFriendly);
+        IQueryable<Sale> query = GetBaseQuery(isLoadFriendly)
+            .TagWith("-- IncludeExecutionPlan")
+            .Where(x => x.Quantity < EF.Constant(100));
+
+        var test = await query.ToListWithPlanAsync(_dbContext as IActualExecutionPlanDbContext);
+
         return new TestResult<int>
         {
             Sql = "SELECT COUNT(*) FROM[Sales] AS[s]",
@@ -145,9 +153,51 @@ public class ExamplesCountController : ControllerBase
         };
     }
 
+    [HttpGet("testConstants")]
+    public TestResult<int> TestConstants(bool isLoadFriendly = false)
+    {
+        int count = 100;
+        int q = 100;
+        IQueryable<Sale> query = _dbContext.Sales
+            .Where(x => x.Quantity < q)
+            .Take(count)
+            .OrderBy(x => x.Quantity)
+            .ThenBy(x => x.CustomerId);
+
+        return new TestResult<int>
+        {
+            Sql = query.ToQueryString(),
+            LiveSql = true,
+            Result = query
+                .TagWithContext()
+                .ToList()
+                .Count
+        };
+    }
+
+    [HttpGet("testConstants2")]
+    public TestResult<int> TestConstants2(bool isLoadFriendly = false)
+    {
+        int q = 100;
+        IQueryable<Sale> query = _dbContext.Sales
+            .Where(x => x.Quantity < EF.Constant(q))
+            .Take(100)
+            .OrderBy(x => x.Quantity)
+            .ThenBy(x => x.CustomerId);
+        return new TestResult<int>
+        {
+            Sql = query.ToQueryString(),
+            LiveSql = true,
+            Result = query
+                .TagWithContext()
+                .ToList()
+                .Count
+        };
+    }
+
     private IQueryable<Sale> GetBaseQuery(bool isLoadFriendly = false)
         => !isLoadFriendly
         ? _dbContext.Sales
         : _dbContext.Sales
-            .Where(x => x.Quantity < 100);
+            .Where(x => x.Quantity < EF.Constant(100));
 }

@@ -1,15 +1,69 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using System.Data.Common;
 
 namespace EFCoreSamples.StabilityAndPerformance.Api.Persistence;
 
+public sealed class ActualExecutionPlanInterceptor : DbCommandInterceptor
+{
+    public override DbCommand CommandInitialized(CommandEndEventData eventData, DbCommand result)
+    {
+        if (result.CommandText.Contains("-- IncludeExecutionPlan"))
+        {
+            // Inject actual execution plan.
+            result.CommandText = $@"SET STATISTICS XML ON; -- OnInit
+
+{result.CommandText}";
+        }
+
+        return base.CommandInitialized(eventData, result);
+    }
+
+    public override InterceptionResult DataReaderClosing(DbCommand command, DataReaderClosingEventData eventData, InterceptionResult result)
+    {
+        // Assume that if it's not closed, has at least a result set with at least 1 row, it's most likely execution plan.
+        if (!eventData.DataReader.IsClosed && eventData.DataReader.NextResult() && eventData.DataReader.Read())
+        {
+            string executionPlan = eventData.DataReader.GetString(0);
+            if (eventData.Context is IActualExecutionPlanDbContext dbContext)
+            {
+                dbContext.LastActualExecutionPlan = executionPlan;
+            }
+
+        }
+
+        return base.DataReaderClosing(command, eventData, result);
+    }
+}
+
+public interface IActualExecutionPlanDbContext
+{
+    string? LastActualExecutionPlan { get; set; }
+}
+
+public static class Ext
+{
+    public static async Task<(List<TSource> Result, string? ExecutionPlan)> ToListWithPlanAsync<TSource>(
+        this IQueryable<TSource> source, IActualExecutionPlanDbContext dbContext,
+        CancellationToken cancellationToken = default)
+    {
+        List<TSource> result = await source
+            .TagWith("IncludeExecutionPlan")
+            .ToListAsync(cancellationToken);
+
+        return (Result: result, ExecutionPlan: dbContext.LastActualExecutionPlan);
+    }
+}
+
 public partial class SalesDbContext(DbContextOptions<SalesDbContext> options)
-    : DbContext(options)
+    : DbContext(options), IActualExecutionPlanDbContext
 {
     public virtual DbSet<Customer> Customers { get; set; }
     public virtual DbSet<Employee> Employees { get; set; }
     public virtual DbSet<Product> Products { get; set; }
     public virtual DbSet<Sale> Sales { get; set; }
     public virtual DbSet<CountView> Counts { get; set; }
+    public string? LastActualExecutionPlan { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
